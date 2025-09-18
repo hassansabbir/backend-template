@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Check - {{PROJECT_NAME}} API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Taurus, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f766e 0%, #059669 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            max-width: 800px;
+            width: 90%;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .status-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, #10b981, #059669);
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+            position: relative;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        .status-icon::before {
+            content: '✓';
+            font-size: 3rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #0f766e;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            animation: fadeIn 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 1.2rem;
+            animation: fadeIn 1s ease-out 0.5s both;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .metric-card:nth-child(1) { animation-delay: 0.7s; }
+        .metric-card:nth-child(2) { animation-delay: 0.9s; }
+        .metric-card:nth-child(3) { animation-delay: 1.1s; }
+        .metric-card:nth-child(4) { animation-delay: 1.3s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #0f766e;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .services-status {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            animation: fadeIn 1s ease-out 1.5s both;
+        }
+
+        .services-title {
+            font-size: 1.3rem;
+            color: #0f766e;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .service-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .service-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .service-name {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .service-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #10b981;
+        }
+
+        .status-dot.configured {
+            background: #3b82f6;
+        }
+
+        .status-dot.not-configured {
+            background: #64748b;
+        }
+
+        @keyframes blink {
+            0%, 50% {
+                opacity: 1;
+            }
+            51%, 100% {
+                opacity: 0.3;
+            }
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50px;
+            padding: 1rem 1.5rem;
+            text-decoration: none;
+            color: #0f766e;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .back-btn:hover {
+            background: #0f766e;
+            color: white;
+            transform: translateX(-5px);
+        }
+
+        .refresh-btn {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: fadeIn 1s ease-out 1.7s both;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .refresh-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .timestamp {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            animation: fadeIn 1s ease-out 1.9s both;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn">← Back to Home</a>
+
+    <div class="container">
+        <div class="header">
+            <div class="status-icon"></div>
+            <h1>{{PROJECT_NAME}} Health</h1>
+            <p class="subtitle">All systems operational</p>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon">⏱️</div>
+                <div class="metric-value" id="uptime">Loading...</div>
+                <div class="metric-label">Uptime</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-icon">🧠</div>
+                <div class="metric-value" id="memory">Loading...</div>
+                <div class="metric-label">Memory Usage (MB)</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-icon">🌍</div>
+                <div class="metric-value" id="environment">Loading...</div>
+                <div class="metric-label">Environment</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-icon">📦</div>
+                <div class="metric-value" id="version">Loading...</div>
+                <div class="metric-label">Version</div>
+            </div>
+        </div>
+
+        <div class="services-status">
+            <h3 class="services-title">🔧 Services Status</h3>
+            
+            <div class="service-item">
+                <span class="service-name">Database</span>
+                <div class="service-status">
+                    <span class="status-dot connected"></span>
+                    <span>Connected</span>
+                </div>
+            </div>
+            
+            <div class="service-item">
+                <span class="service-name">Cloudinary</span>
+                <div class="service-status">
+                    <span class="status-dot configured" id="cloudinary-dot"></span>
+                    <span id="cloudinary-status">Loading...</span>
+                </div>
+            </div>
+            
+            <div class="service-item">
+                <span class="service-name">Redis</span>
+                <div class="service-status">
+                    <span class="status-dot not-configured" id="redis-dot"></span>
+                    <span id="redis-status">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Data</button>
+        
+        <div class="timestamp" id="timestamp">Last updated: Loading...</div>
+    </div>
+
+    <script>
+        async function loadHealthData() {
+            try {
+                const response = await fetch('/api/health');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const healthData = result.data;
+                    
+                    // Update metrics
+                    const formatUptime = (seconds) => {
+                        const days = Math.floor(seconds / 86400);
+                        const hours = Math.floor((seconds % 86400) / 3600);
+                        const minutes = Math.floor((seconds % 3600) / 60);
+                        const secs = Math.floor(seconds % 60);
+                        
+                        let result = '';
+                        if (days > 0) result += `${days}d `;
+                        if (hours > 0 || days > 0) result += `${hours}h `;
+                        if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
+                        result += `${secs}s`;
+                        
+                        return result.trim();
+                    };
+                    
+                    document.getElementById('uptime').textContent = formatUptime(healthData.uptime);
+                    document.getElementById('memory').textContent = (healthData.memory?.used || 'N/A') + ' MB';
+                    document.getElementById('environment').textContent = healthData.environment || 'development';
+                    document.getElementById('version').textContent = healthData.version || '1.0.0';
+                    
+                    // Update services
+                    const cloudinaryStatus = healthData.services?.cloudinary || 'not configured';
+                    const redisStatus = healthData.services?.redis || 'not configured';
+                    
+                    document.getElementById('cloudinary-status').textContent = cloudinaryStatus;
+                    document.getElementById('redis-status').textContent = redisStatus;
+                    
+                    // Update status dots
+                    const cloudinaryDot = document.getElementById('cloudinary-dot');
+                    const redisDot = document.getElementById('redis-dot');
+                    
+                    cloudinaryDot.className = `status-dot ${cloudinaryStatus === 'configured' ? 'configured' : 'not-configured'}`;
+                    redisDot.className = `status-dot ${redisStatus === 'configured' ? 'configured' : 'not-configured'}`;
+                    
+                    // Update timestamp
+                    document.getElementById('timestamp').textContent = `Last updated: ${new Date().toLocaleString()}`;
+                    
+                    return Promise.resolve();
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                console.error('Failed to load health data:', error);
+                // Set fallback values when API fails
+                document.getElementById('uptime').textContent = 'Error';
+                document.getElementById('memory').textContent = 'Error';
+                document.getElementById('environment').textContent = 'Error';
+                document.getElementById('version').textContent = 'Error';
+                document.getElementById('cloudinary-status').textContent = 'Error';
+                document.getElementById('redis-status').textContent = 'Error';
+                document.getElementById('timestamp').textContent = `Last updated: Error loading data`;
+                
+                return Promise.reject(error);
+            }
+        }
+
+        function refreshData() {
+            console.log('Refresh button clicked');
+            // Add visual feedback
+            const button = document.querySelector('.refresh-btn');
+            const originalText = button.textContent;
+            button.textContent = '🔄 Refreshing...';
+            button.disabled = true;
+            
+            loadHealthData().then(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+            }).catch(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+            });
+        }
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadHealthData);
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadHealthData, 30000);
+    </script>
+</body>
+</html>
