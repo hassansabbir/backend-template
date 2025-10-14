@@ -179,26 +179,39 @@ app.use("/views", express.static(path.join(__dirname, "views")));
  * Helper function to detect browser requests
  */
 const isBrowserRequest = (req: Request): boolean => {
-  const userAgent = req.get('User-Agent') || '';
-  const acceptHeader = req.get('Accept') || '';
-  
+  const userAgent = req.get("User-Agent") || "";
+  const acceptHeader = req.get("Accept") || "";
+
   // Check if request accepts HTML and is likely from a browser
-  return acceptHeader.includes('text/html') && 
-         (userAgent.includes('Mozilla') || userAgent.includes('Chrome') || userAgent.includes('Safari') || userAgent.includes('Firefox'));
+  return (
+    acceptHeader.includes("text/html") &&
+    (userAgent.includes("Mozilla") ||
+      userAgent.includes("Chrome") ||
+      userAgent.includes("Safari") ||
+      userAgent.includes("Firefox"))
+  );
 };
 
 /**
  * Helper function to serve HTML files with template replacement
  */
-const serveHtmlFile = (res: Response, filePath: string, fallbackData: any, fallbackMessage: string) => {
-  const fullPath = path.join(__dirname, 'views', filePath);
-  
+const serveHtmlFile = (
+  res: Response,
+  filePath: string,
+  fallbackData: any,
+  fallbackMessage: string
+) => {
+  const fullPath = path.join(__dirname, "views", filePath);
+
   if (fs.existsSync(fullPath)) {
     // Read the HTML file and replace placeholders
-    const htmlContent = fs.readFileSync(fullPath, 'utf8');
-    const processedHtml = htmlContent.replace(/{{PROJECT_NAME}}/g, config.project.displayName);
-    
-    res.setHeader('Content-Type', 'text/html');
+    const htmlContent = fs.readFileSync(fullPath, "utf8");
+    const processedHtml = htmlContent.replace(
+      /{{PROJECT_NAME}}/g,
+      config.project.displayName
+    );
+
+    res.setHeader("Content-Type", "text/html");
     res.send(processedHtml);
   } else {
     // Fallback to JSON if HTML file doesn't exist
@@ -221,7 +234,7 @@ app.get("/health", (req: Request, res: Response) => {
   };
 
   if (isBrowserRequest(req)) {
-    serveHtmlFile(res, 'health.html', healthData, "Service is healthy");
+    serveHtmlFile(res, "health.html", healthData, "Service is healthy");
   } else {
     ResponseUtils.success(res, healthData, "Service is healthy");
   }
@@ -281,7 +294,12 @@ app.get("/", (req: Request, res: Response) => {
   };
 
   if (isBrowserRequest(req)) {
-    serveHtmlFile(res, 'welcome.html', welcomeData, "API is running successfully");
+    serveHtmlFile(
+      res,
+      "welcome.html",
+      welcomeData,
+      "API is running successfully!!"
+    );
   } else {
     ResponseUtils.success(res, welcomeData, "API is running successfully");
   }
@@ -320,7 +338,7 @@ app.get("/api/docs", (req: Request, res: Response) => {
   };
 
   if (isBrowserRequest(req)) {
-    serveHtmlFile(res, 'docs.html', docsData, "API Documentation");
+    serveHtmlFile(res, "docs.html", docsData, "API Documentation");
   } else {
     ResponseUtils.success(res, docsData, "API Documentation");
   }
