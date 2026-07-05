@@ -243,7 +243,4 @@ Thumbs.db
 
 # Application specific
 # Add any project-specific files or directories here
-branch_structure.json
-temp_auto_push.bat
-temp_interactive_push.bat
 .gitignore
